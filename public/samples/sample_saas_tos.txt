@@ -1,0 +1,28 @@
+TERMS OF SERVICE AND SOFTWARE LICENSE AGREEMENT
+
+1. ACCEPTANCE OF TERMS
+By accessing or using CloudSync Platform ("Service"), operated by NovaCloud Technologies Inc. ("Company"), you ("Subscriber") agree to be bound by these Terms of Service. If Subscriber does not agree, Subscriber must cease all access immediately.
+
+2. LICENSE GRANT AND RESTRICTIONS
+Company grants Subscriber a non-exclusive, non-transferable, revocable license to access the Service during the subscription period. Subscriber shall not: (a) reverse engineer, decompile, or disassemble the platform; (b) resell or sublicense access; (c) bypass security controls or rate limits.
+
+3. SUBSCRIPTION BILLING AND AUTO-RENEWAL
+Subscriptions are billed annually in advance at $1,200.00 per user seat. Subscriptions automatically renew at the end of each annual billing cycle unless Subscriber cancels in writing via the admin portal at least thirty (30) days prior to renewal. All subscription fees are completely non-refundable once billed.
+
+4. DATA OWNERSHIP AND PRIVACY
+Subscriber retains ownership of all customer data uploaded to the Service. Company is granted a worldwide, royalty-free license to use, host, store, and analyze Subscriber data solely to provide, enhance, and secure the Service. Company agrees to implement reasonable administrative, physical, and technical safeguards.
+
+5. SERVICE LEVEL AGREEMENT (SLA) AND DOWNTIME
+Company targets 99.9% uptime. In the event of documented downtime exceeding scheduled maintenance, Subscriber's sole and exclusive remedy shall be a pro-rata service credit applied to subsequent invoices, capped at 15% of the monthly fee.
+
+6. LIMITATION OF LIABILITY
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL COMPANY BE LIABLE FOR INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOSS OF PROFITS, DATA, OR REVENUE. COMPANY'S TOTAL AGGREGATE LIABILITY ARISING UNDER THIS AGREEMENT SHALL BE LIMITED TO THE TOTAL AMOUNT PAID BY SUBSCRIBER IN THE THREE (3) MONTHS PRECEDING THE CLAIM.
+
+7. INDEMNIFICATION
+Subscriber agrees to defend, indemnify, and hold harmless Company from any third-party claims, liabilities, damages, and expenses arising out of Subscriber's content or unauthorized use of the platform.
+
+8. MODIFICATIONS TO TERMS
+Company reserves the right to amend these Terms at any time by posting revised terms on the website. Continued use of the Service thirty (30) days after posting constitutes acceptance of amended terms.
+
+9. DISPUTE RESOLUTION AND CLASS ACTION WAIVER
+All disputes arising out of these Terms shall be resolved by binding individual arbitration under AAA rules in Wilmington, Delaware. Subscriber explicitly waives the right to participate in class action lawsuits.
