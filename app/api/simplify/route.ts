@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SimplifyInputSchema, SimplifyResponseSchema } from "@/lib/validation";
+import { SIMPLIFY_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
 import { buildSimplifyPrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
 import {
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
       systemInstruction,
       userContent,
       schema: SimplifyResponseSchema,
+      responseSchema: SIMPLIFY_RESPONSE_SCHEMA,
       model: DEFAULT_MODEL, // gemini-2.5-flash for speed and cost efficiency
     });
 

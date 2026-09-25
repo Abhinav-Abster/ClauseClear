@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AnalyzeInputSchema, AnalyzeResponseSchema } from "@/lib/validation";
+import { ANALYZE_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
 import { buildAnalyzePrompt } from "@/lib/prompts";
 import { generateStructuredContent, REASONING_MODEL } from "@/lib/gemini";
 import {
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
       systemInstruction,
       userContent,
       schema: AnalyzeResponseSchema,
+      responseSchema: ANALYZE_RESPONSE_SCHEMA,
       model: REASONING_MODEL,
     });
 

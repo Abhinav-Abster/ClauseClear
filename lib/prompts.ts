@@ -43,26 +43,7 @@ TASK: Break down the provided legal document into section-by-section plain-langu
 ${languageDirective}
 
 OUTPUT REQUIREMENTS:
-Respond in valid JSON adhering strictly to the required schema:
-{
-  "summary": "2-3 sentence high-level summary of what this document is and its main purpose.",
-  "documentType": "Identified type of document (e.g., Residential Lease Agreement, SaaS Terms of Service, Employment Contract)",
-  "sections": [
-    {
-      "heading": "Section name or number",
-      "originalSnippet": "Brief representative excerpt from this section (up to 150 characters)",
-      "plainLanguageSummary": "What this section means in everyday plain language without legal jargon",
-      "keyTakeaway": "One short sentence highlighting what the user needs to know"
-    }
-  ],
-  "glossary": [
-    {
-      "term": "Legal or technical term used in the document (e.g., Indemnification, Escrow, Force Majeure)",
-      "definition": "Simple, beginner-friendly definition of what this term means in general",
-      "contextInDoc": "How this term is applied specifically in this document"
-    }
-  ]
-}`,
+Respond with structured JSON matching the required schema.`,
     userContent: `Analyze the following legal document and provide the plain-language breakdown and glossary:\n\n--- BEGIN DOCUMENT DATA ---\n${documentText}\n--- END DOCUMENT DATA ---`,
   };
 }
@@ -86,30 +67,7 @@ EVALUATION GUIDELINES:
 - 'low': Standard procedural requirements, normal operating rules, customary grace periods.
 
 OUTPUT REQUIREMENTS:
-Respond in valid JSON adhering strictly to the schema:
-{
-  "overallRiskLevel": "low" | "medium" | "high",
-  "executiveSummary": "2-3 sentence assessment of the document's risk profile and balance of power.",
-  "clauses": [
-    {
-      "title": "Short descriptive title of clause",
-      "type": "obligation" | "deadline" | "risk" | "unusual_term",
-      "severity": "low" | "medium" | "high",
-      "exactQuote": "VERBATIM quote from the document containing this clause (never an unsourced claim)",
-      "explanation": "Clear explanation of what this clause entails and its practical consequences",
-      "recommendation": "Informational guidance on what to check, ask for, or discuss with a lawyer"
-    }
-  ],
-  "deadlines": [
-    {
-      "title": "Title of deadline or notice requirement",
-      "timeframe": "Explicit timeframe (e.g., 60 days prior, by the 5th of each month, 24 hours)",
-      "triggerEvent": "What starts the timer or triggers the requirement",
-      "consequenceOfMissing": "What happens if this deadline is missed according to the text",
-      "exactQuote": "VERBATIM excerpt proving this deadline"
-    }
-  ]
-}`,
+Respond with structured JSON matching the required schema.`,
     userContent: `Analyze the following document for obligations, deadlines, and risks:\n\n--- BEGIN DOCUMENT DATA ---\n${documentText}\n--- END DOCUMENT DATA ---`,
   };
 }
@@ -142,14 +100,7 @@ CRITICAL GROUNDING RULES:
 4. Always quote the specific sentence(s) from the document that back up your answer.
 
 OUTPUT REQUIREMENTS:
-Respond in valid JSON adhering strictly to the schema:
-{
-  "isCoveredInDocument": true | false,
-  "answer": "Clear, direct answer explaining what the document says (or clearly stating that the document does not cover this topic).",
-  "relevantQuotes": ["Verbatim quote from document supporting answer, or empty array if not covered"],
-  "suggestedFollowUps": ["1-3 suggested follow-up questions relevant to this document"],
-  "informationalDisclaimer": "This response provides factual information from the document and does not constitute legal advice."
-}`,
+Respond with structured JSON matching the required schema.`,
     userContent: `${formattedHistory ? `Prior Conversation History:\n${formattedHistory}\n\n` : ""}User Question: "${question}"
 
 --- BEGIN DOCUMENT DATA ---
@@ -171,32 +122,7 @@ TASK: Generate a practical action checklist of next steps, calendar milestones, 
 ${languageDirective}
 
 OUTPUT REQUIREMENTS:
-Respond in valid JSON adhering strictly to the schema:
-{
-  "immediateActions": [
-    {
-      "task": "Specific actionable next step (e.g., 'Document pre-existing condition of premises with photos')",
-      "priority": "urgent" | "important" | "recommended",
-      "rationale": "Why this action matters based on clauses in the document",
-      "relevantQuote": "Exact quote from document related to this action (if applicable)"
-    }
-  ],
-  "importantDeadlines": [
-    {
-      "dateOrWindow": "Timeframe or trigger date",
-      "description": "What must be accomplished before this window closes",
-      "penaltyOrRisk": "Consequence if ignored"
-    }
-  ],
-  "lawyerQuestions": [
-    {
-      "category": "Topic (e.g., Liability, Deposit Return, Termination Clause, Dispute Resolution)",
-      "question": "Exact, articulate question to ask a licensed attorney",
-      "reasonToAsk": "Why this question is critical for the user's protection",
-      "potentialRedFlag": "What kind of answer should raise concern"
-    }
-  ]
-}`,
+Respond with structured JSON matching the required schema.`,
     userContent: `Generate an action checklist and lawyer consultation questions for the following document:\n\n--- BEGIN DOCUMENT DATA ---\n${documentText}\n--- END DOCUMENT DATA ---`,
   };
 }
@@ -221,36 +147,7 @@ Identify key differences, evaluate which provision is more favorable to the sign
 ${languageDirective}
 
 OUTPUT REQUIREMENTS:
-Respond in valid JSON adhering strictly to the schema:
-{
-  "summary": "Executive overview comparing both documents and their overall posture.",
-  "comparisonPoints": [
-    {
-      "topic": "Topic compared (e.g., Monthly Rent, Security Deposit, Notice Period, Termination Fee, Dispute Forum)",
-      "documentAProvision": "Exact summary or quote from ${labelA}",
-      "documentBProvision": "Exact summary or quote from ${labelB}",
-      "moreFavorableToUser": "documentA" | "documentB" | "equal" | "unclear",
-      "favourabilityReasoning": "Objective rationale explaining why one provision is more advantageous to the signing party"
-    }
-  ],
-  "uniqueToDocumentA": [
-    {
-      "clause": "Name of provision",
-      "summary": "Summary of clause present in ${labelA} but omitted in ${labelB}",
-      "significance": "Why the omission matters"
-    }
-  ],
-  "uniqueToDocumentB": [
-    {
-      "clause": "Name of provision",
-      "summary": "Summary of clause present in ${labelB} but omitted in ${labelA}",
-      "significance": "Why the omission matters"
-    }
-  ],
-  "keyRecommendationsForReview": [
-    "Targeted recommendations for the user or their lawyer to consider when choosing between these agreements"
-  ]
-}`,
+Respond with structured JSON matching the required schema.`,
     userContent: `Compare the two following legal documents:
 
 --- BEGIN ${labelA} ---

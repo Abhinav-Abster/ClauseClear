@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AskInputSchema, AskResponseSchema } from "@/lib/validation";
+import { ASK_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
 import { buildAskPrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
 import {
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest) {
   const { document, question, history, language } = parseResult.data;
   const docHash = hashContent(document);
   const qHash = hashContent(question);
-  const cacheKey = buildCacheKey("ask", docHash, qHash, language);
+  const historyHash = hashContent(JSON.stringify(history));
+  const cacheKey = buildCacheKey("ask", docHash, qHash, historyHash, language);
 
   // 3. Cache Lookup
   const cachedResponse = getFromCache<unknown>(cacheKey);
@@ -80,6 +82,7 @@ export async function POST(req: NextRequest) {
       systemInstruction,
       userContent,
       schema: AskResponseSchema,
+      responseSchema: ASK_RESPONSE_SCHEMA,
       model: DEFAULT_MODEL, // fast, low-latency grounded Q&A
     });
 

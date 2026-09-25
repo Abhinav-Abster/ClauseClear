@@ -25,33 +25,33 @@ export const Header: React.FC<HeaderProps> = ({
   const t = UI_TRANSLATIONS[language];
 
   return (
-    <header className="border-b border-slate-200 bg-white dark:bg-slate-900 transition-colors">
+    <header className="sticky top-0 z-50 border-b border-md-outline/15 bg-md-surface/80 backdrop-blur-md transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
         {/* Brand & Tagline */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-md-primary text-md-on-primary shadow-md-elevation-1 transition-transform duration-300 hover:scale-105 active:scale-95">
             <Scale className="h-6 w-6" aria-hidden="true" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl font-bold tracking-tight text-md-on-surface">
                 {t.appName}
               </span>
-              <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <span className="inline-flex items-center rounded-full bg-md-secondary-container px-2.5 py-0.5 text-xs font-medium text-md-on-secondary-container shadow-xs">
                 Informational AI
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+            <p className="text-xs text-md-on-surface-variant hidden sm:block">
               {t.tagline}
             </p>
           </div>
         </div>
 
         {/* Accessibility & Localization Toolbar */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4" role="toolbar" aria-label="Accessibility and language settings">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3" role="toolbar" aria-label="Accessibility and language settings">
           {/* Language Selector */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
-            <Globe className="h-4 w-4 text-slate-500 ml-1.5" aria-hidden="true" />
+          <div className="flex items-center gap-1.5 bg-md-surface-container rounded-full px-3 py-1 border border-md-outline/20 hover:bg-md-primary/10 transition-colors duration-200">
+            <Globe className="h-4 w-4 text-md-on-surface-variant" aria-hidden="true" />
             <label htmlFor="language-select" className="sr-only">
               {t.accessibility.language}
             </label>
@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="language-select"
               value={language}
               onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
-              className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 py-1 px-2 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs font-medium text-md-on-surface py-0.5 focus:outline-none cursor-pointer"
             >
               <option value="en">English (EN)</option>
               <option value="es">Español (ES)</option>
@@ -69,15 +69,15 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Text Size Switcher */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700" role="group" aria-label={t.accessibility.textSize}>
+          <div className="flex items-center bg-md-surface-container rounded-full p-1 border border-md-outline/20 gap-0.5" role="group" aria-label={t.accessibility.textSize}>
             <span className="sr-only">{t.accessibility.textSize}</span>
             <button
               type="button"
               onClick={() => onChangeTextSize("normal")}
-              className={`px-2 py-1 text-xs font-semibold rounded ${
+              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 active:scale-95 ${
                 textSize === "normal"
-                  ? "bg-white dark:bg-slate-700 text-blue-600 shadow-xs"
-                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                  ? "bg-md-primary text-md-on-primary shadow-xs"
+                  : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
               }`}
               aria-label="Default text size"
               aria-pressed={textSize === "normal"}
@@ -87,10 +87,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => onChangeTextSize("large")}
-              className={`px-2 py-1 text-sm font-semibold rounded ${
+              className={`px-2.5 py-1 text-sm font-medium rounded-full transition-all duration-200 active:scale-95 ${
                 textSize === "large"
-                  ? "bg-white dark:bg-slate-700 text-blue-600 shadow-xs"
-                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                  ? "bg-md-primary text-md-on-primary shadow-xs"
+                  : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
               }`}
               aria-label="Large text size"
               aria-pressed={textSize === "large"}
@@ -100,10 +100,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => onChangeTextSize("xlarge")}
-              className={`px-2 py-1 text-base font-bold rounded ${
+              className={`px-2.5 py-1 text-base font-semibold rounded-full transition-all duration-200 active:scale-95 ${
                 textSize === "xlarge"
-                  ? "bg-white dark:bg-slate-700 text-blue-600 shadow-xs"
-                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900"
+                  ? "bg-md-primary text-md-on-primary shadow-xs"
+                  : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
               }`}
               aria-label="Extra large text size"
               aria-pressed={textSize === "xlarge"}
@@ -116,10 +116,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onToggleHighContrast}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium border transition-colors ${
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-200 active:scale-95 ${
               highContrast
-                ? "bg-black text-yellow-300 border-yellow-400"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+                ? "bg-black text-yellow-300 border-yellow-400 shadow-sm"
+                : "bg-md-surface-container text-md-on-surface border-md-outline/20 hover:bg-md-primary/10"
             }`}
             aria-pressed={highContrast}
             aria-label={t.accessibility.highContrast}

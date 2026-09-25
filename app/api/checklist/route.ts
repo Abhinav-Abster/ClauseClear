@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChecklistInputSchema, ChecklistResponseSchema } from "@/lib/validation";
+import { CHECKLIST_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
 import { buildChecklistPrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
 import {
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
       systemInstruction,
       userContent,
       schema: ChecklistResponseSchema,
+      responseSchema: CHECKLIST_RESPONSE_SCHEMA,
       model: DEFAULT_MODEL,
     });
 

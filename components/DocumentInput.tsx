@@ -68,15 +68,17 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex flex-col gap-4">
+    <div className="rounded-[24px] border border-md-outline/15 bg-md-surface-container p-6 shadow-md-elevation-1 transition-all duration-300 hover:shadow-md-elevation-2 flex flex-col gap-4">
       {/* Title and Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" aria-hidden="true" />
+          <h2 className="text-base font-semibold text-md-on-surface flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-md-primary/10 text-md-primary">
+              <FileText className="h-4 w-4" aria-hidden="true" />
+            </div>
             {t.input.title}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-md-on-surface-variant mt-0.5 ml-10">
             {t.input.subtitle}
           </p>
         </div>
@@ -85,7 +87,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
           <button
             type="button"
             onClick={() => onDocumentChange("")}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-md-error bg-md-error-container/40 hover:bg-md-error-container hover:text-md-on-error-container transition-all duration-200 active:scale-95"
             aria-label="Clear document text"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -95,36 +97,36 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
       </div>
 
       {/* Synthetic Sample Selectors */}
-      <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700/60">
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 block mb-2">
+      <div className="bg-md-surface-container-low p-3.5 rounded-2xl border border-md-outline/15">
+        <span className="text-xs font-medium text-md-on-surface-variant block mb-2">
           {t.input.sampleDocsTitle}
         </span>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => onLoadSample("standard")}
-            className="rounded-md bg-white dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-2xs"
+            className="rounded-full bg-md-surface px-3 py-1.5 text-xs font-medium text-md-on-surface border border-md-outline/25 hover:bg-md-primary/10 hover:border-md-primary transition-all duration-200 active:scale-95 shadow-xs"
           >
             📋 {t.input.sampleLeaseStandard}
           </button>
           <button
             type="button"
             onClick={() => onLoadSample("strict")}
-            className="rounded-md bg-white dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors shadow-2xs"
+            className="rounded-full bg-md-surface px-3 py-1.5 text-xs font-medium text-md-tertiary border border-md-tertiary/30 hover:bg-md-tertiary-container hover:text-md-on-tertiary-container transition-all duration-200 active:scale-95 shadow-xs"
           >
             ⚠️ {t.input.sampleLeaseStrict}
           </button>
           <button
             type="button"
             onClick={() => onLoadSample("saas")}
-            className="rounded-md bg-white dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-2xs"
+            className="rounded-full bg-md-surface px-3 py-1.5 text-xs font-medium text-md-on-surface border border-md-outline/25 hover:bg-md-primary/10 hover:border-md-primary transition-all duration-200 active:scale-95 shadow-xs"
           >
             💻 {t.input.sampleSaasTos}
           </button>
         </div>
       </div>
 
-      {/* Main Textarea */}
+      {/* Main Textarea (Material 3 Filled Text Field style) */}
       <div className="relative">
         <label htmlFor="document-editor" className="sr-only">
           {t.input.pastePlaceholder}
@@ -136,31 +138,31 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
           onChange={(e) => onDocumentChange(e.target.value)}
           placeholder={t.input.pastePlaceholder}
           aria-describedby="char-counter max-notice"
-          className={`w-full rounded-lg border p-3.5 text-sm leading-relaxed transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-slate-950 dark:text-slate-100 font-mono ${
+          className={`w-full rounded-t-xl rounded-b-none border-0 border-b-2 p-4 text-sm leading-relaxed transition-all duration-200 focus:outline-none bg-md-surface-container-low text-md-on-surface font-mono placeholder:text-md-on-surface-variant/50 focus:bg-md-surface-container-lowest ${
             isOverLimit
-              ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+              ? "border-b-md-error focus:border-b-md-error"
               : isNearLimit
-                ? "border-amber-400 focus:border-amber-500"
-                : "border-slate-300 dark:border-slate-700"
+                ? "border-b-amber-500 focus:border-b-amber-600"
+                : "border-b-md-outline focus:border-b-md-primary"
           }`}
         />
 
         {/* Live Character Counter */}
-        <div className="mt-1 flex items-center justify-between text-xs">
+        <div className="mt-1.5 flex items-center justify-between text-xs px-1">
           <span
             id="char-counter"
             className={`font-medium ${
               isOverLimit
-                ? "text-red-600 dark:text-red-400 font-bold"
+                ? "text-md-error font-bold"
                 : isNearLimit
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-slate-500 dark:text-slate-400"
+                  ? "text-amber-700 dark:text-amber-400"
+                  : "text-md-on-surface-variant"
             }`}
           >
             {charCount.toLocaleString()} / {MAX_DOCUMENT_LENGTH.toLocaleString()} {t.input.charCount}
           </span>
           {isOverLimit && (
-            <span id="max-notice" className="text-red-600 font-medium flex items-center gap-1">
+            <span id="max-notice" className="text-md-error font-medium flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
               {t.input.maxLimitNotice}
             </span>
@@ -176,10 +178,10 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors block ${
+        className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all duration-300 block ${
           isDragging
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20"
-            : "border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 bg-slate-50/50 dark:bg-slate-800/30"
+            ? "border-md-primary bg-md-primary-container/30"
+            : "border-md-outline/30 hover:border-md-primary bg-md-surface-container-low/60 hover:bg-md-primary/5"
         }`}
       >
         <input
@@ -193,16 +195,18 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
           accept=".txt,.pdf,text/plain,application/pdf"
           className="sr-only"
         />
-        <div className="flex flex-col items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400">
+        <div className="flex flex-col items-center justify-center gap-1.5 text-md-on-surface-variant">
           {isUploading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" />
+            <Loader2 className="h-6 w-6 animate-spin text-md-primary" aria-hidden="true" />
           ) : (
-            <Upload className="h-5 w-5 text-slate-400" aria-hidden="true" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-md-surface border border-md-outline/20">
+              <Upload className="h-4 w-4 text-md-primary" aria-hidden="true" />
+            </div>
           )}
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          <span className="text-xs font-medium text-md-on-surface">
             {isUploading ? t.actions.loading : t.input.dropzoneText}
           </span>
-          <span className="text-2xs text-slate-400">{t.input.orClickUpload}</span>
+          <span className="text-2xs text-md-on-surface-variant/70">{t.input.orClickUpload}</span>
         </div>
       </label>
 
@@ -210,18 +214,18 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
       {uploadError && (
         <div
           role="alert"
-          className="rounded-lg bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300 border border-red-200 dark:border-red-900 flex items-center gap-2"
+          className="rounded-2xl bg-md-error-container p-3 text-xs text-md-on-error-container border border-md-error/30 flex items-center gap-2"
         >
-          <AlertCircle className="h-4 w-4 shrink-0 text-red-500" aria-hidden="true" />
+          <AlertCircle className="h-4 w-4 shrink-0 text-md-error" aria-hidden="true" />
           {uploadError}
         </div>
       )}
       {uploadSuccess && (
         <div
           role="status"
-          className="rounded-lg bg-emerald-50 p-2.5 text-xs text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 flex items-center gap-2"
+          className="rounded-2xl bg-md-secondary-container p-3 text-xs text-md-on-secondary-container border border-md-primary/20 flex items-center gap-2"
         >
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-md-primary" aria-hidden="true" />
           {uploadSuccess}
         </div>
       )}

@@ -3,7 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-roboto: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --md-sys-color-primary: #6750a4;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-secondary-container: #e8def8;
+  --md-sys-color-on-secondary-container: #1d192b;
+  --md-sys-color-surface: #fffbfe;
+  --md-sys-color-on-surface: #1c1b1f;
+  --md-sys-color-surface-container: #f3edf7;
+  --md-sys-color-surface-container-low: #e7e0ec;
+  --md-sys-color-outline: #79747e;
+  --md-sys-color-tertiary: #7d5260;
+  --md-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Default Body & Typography */
+body {
+  font-family: var(--font-roboto);
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Material You Focus visible indicator for WCAG AA compliance */
+*:focus-visible {
+  outline: 2px solid #6750a4 !important;
+  outline-offset: 2px !important;
 }
 
 /* Accessible High Contrast Mode */
@@ -11,7 +35,7 @@
   --bg-primary: #000000;
   --text-primary: #ffffff;
   --border-primary: #ffffff;
-  filter: contrast(115%);
+  filter: contrast(120%);
 }
 
 .high-contrast body {
@@ -19,22 +43,25 @@
   color: #ffffff !important;
 }
 
-.high-contrast .bg-white {
+.high-contrast .bg-white,
+.high-contrast [class*="bg-md-surface"],
+.high-contrast [class*="bg-md-background"] {
   background-color: #0d0d0d !important;
   color: #ffffff !important;
   border-color: #ffffff !important;
 }
 
+.high-contrast [class*="text-md-on-surface-variant"],
+.high-contrast .text-slate-500,
 .high-contrast .text-slate-600,
 .high-contrast .text-slate-700,
 .high-contrast .text-slate-800 {
   color: #f1f5f9 !important;
 }
 
-/* Focus indicator for keyboard navigation WCAG 2.1 AA compliance */
-*:focus-visible {
-  outline: 2px solid #0c85e8;
-  outline-offset: 2px;
+.high-contrast *:focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 3px !important;
 }
 
 /* Text Scaling */
@@ -48,4 +75,16 @@ html.text-scale-large {
 
 html.text-scale-xlarge {
   font-size: 20px;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

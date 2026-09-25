@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CompareInputSchema, CompareResponseSchema } from "@/lib/validation";
+import { COMPARE_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
 import { buildComparePrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
 import {
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
       systemInstruction,
       userContent,
       schema: CompareResponseSchema,
+      responseSchema: COMPARE_RESPONSE_SCHEMA,
       model: DEFAULT_MODEL,
     });
 

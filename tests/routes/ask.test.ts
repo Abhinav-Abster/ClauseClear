@@ -41,6 +41,7 @@ Pets: One domestic dog under 35 lbs permitted with a $300 refundable deposit.
       body: JSON.stringify({
         document: validDoc,
         question: "How much is the security deposit?",
+        history: [{ role: "user", content: "Can you help me understand this lease?" }],
       }),
     });
 
@@ -70,6 +71,7 @@ Pets: One domestic dog under 35 lbs permitted with a $300 refundable deposit.
       body: JSON.stringify({
         document: validDoc,
         question: "Is there a designated garage parking spot included?",
+        history: [],
       }),
     });
 
@@ -95,5 +97,75 @@ Pets: One domestic dog under 35 lbs permitted with a $300 refundable deposit.
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain("at least 3 characters");
+  });
+
+  it("includes conversation history in cache key calculation to prevent serving mismatched context", async () => {
+    const mockOutput1 = {
+      isCoveredInDocument: true,
+      answer: "Response for context 1",
+      relevantQuotes: ["with a $2,200 security deposit held in an interest-bearing escrow account."],
+      suggestedFollowUps: [],
+      informationalDisclaimer: "Disclaimer",
+    };
+    const mockOutput2 = {
+      isCoveredInDocument: true,
+      answer: "Response for context 2",
+      relevantQuotes: ["with a $2,200 security deposit held in an interest-bearing escrow account."],
+      suggestedFollowUps: [],
+      informationalDisclaimer: "Disclaimer",
+    };
+
+    (gemini.generateStructuredContent as jest.Mock)
+      .mockResolvedValueOnce(mockOutput1)
+      .mockResolvedValueOnce(mockOutput2);
+
+    const req1 = new NextRequest("http://localhost:3000/api/ask", {
+      method: "POST",
+      body: JSON.stringify({
+        document: validDoc,
+        question: "What about the deposit?",
+        history: [{ role: "user", content: "Context A" }],
+      }),
+    });
+
+    const res1 = await POST(req1);
+    expect(res1.status).toBe(200);
+    const data1 = await res1.json();
+    expect(data1.answer).toBe("Response for context 1");
+    expect(res1.headers.get("X-Cache")).toBe("MISS");
+
+    // Second request with SAME question and document, but DIFFERENT history
+    const req2 = new NextRequest("http://localhost:3000/api/ask", {
+      method: "POST",
+      body: JSON.stringify({
+        document: validDoc,
+        question: "What about the deposit?",
+        history: [{ role: "user", content: "Context B" }],
+      }),
+    });
+
+    const res2 = await POST(req2);
+    expect(res2.status).toBe(200);
+    const data2 = await res2.json();
+    expect(data2.answer).toBe("Response for context 2");
+    expect(res2.headers.get("X-Cache")).toBe("MISS");
+    expect(gemini.generateStructuredContent).toHaveBeenCalledTimes(2);
+
+    // Third request with IDENTICAL question, document, and history as req1 should hit cache
+    const req3 = new NextRequest("http://localhost:3000/api/ask", {
+      method: "POST",
+      body: JSON.stringify({
+        document: validDoc,
+        question: "What about the deposit?",
+        history: [{ role: "user", content: "Context A" }],
+      }),
+    });
+
+    const res3 = await POST(req3);
+    expect(res3.status).toBe(200);
+    const data3 = await res3.json();
+    expect(data3.answer).toBe("Response for context 1");
+    expect(res3.headers.get("X-Cache")).toBe("HIT");
+    expect(gemini.generateStructuredContent).toHaveBeenCalledTimes(2);
   });
 });

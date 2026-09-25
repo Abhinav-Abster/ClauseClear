@@ -49,26 +49,28 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
   return (
     <div className="flex flex-col gap-6">
       {/* Action Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-md-surface-container p-5 rounded-[24px] border border-md-outline/15 shadow-md-elevation-1 transition-all duration-300">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" aria-hidden="true" />
+          <h3 className="text-lg font-medium text-md-on-surface flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-md-primary/10 text-md-primary">
+              <Sparkles className="h-5 w-5" aria-hidden="true" />
+            </div>
             {t.simplify.title}
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-md-on-surface-variant mt-1 ml-11">
             {t.simplify.glossarySubtitle}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {data && (
             <button
               type="button"
               onClick={copySummary}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-md-outline/25 bg-md-surface px-4 py-2 text-xs font-medium text-md-on-surface hover:bg-md-primary/10 hover:border-md-primary transition-all duration-200 active:scale-95 shadow-xs"
               aria-label="Copy summary to clipboard"
             >
-              {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+              {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-md-on-surface-variant" />}
               {copied ? t.actions.copied : t.actions.copy}
             </button>
           )}
@@ -77,7 +79,7 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
             type="button"
             onClick={onRunSimplify}
             disabled={!canRun || isLoading}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-semibold shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-md-primary hover:bg-md-primary/90 text-md-on-primary px-6 py-2.5 text-sm font-medium shadow-md-elevation-1 hover:shadow-md-elevation-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
             {isLoading ? (
               <>
@@ -95,21 +97,21 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
       {data ? (
         <div className="space-y-6">
           {/* Document Type & Executive Summary */}
-          <div className="rounded-xl border border-blue-100 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-5 shadow-xs">
-            <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 mb-2">
-              <FileBadge className="h-5 w-5" aria-hidden="true" />
+          <div className="rounded-[24px] border border-md-outline/15 bg-md-secondary-container/35 p-6 shadow-xs">
+            <div className="flex items-center gap-2 text-md-on-secondary-container mb-2.5">
+              <FileBadge className="h-5 w-5 text-md-primary" aria-hidden="true" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t.simplify.docType}: {data.documentType}
               </span>
             </div>
-            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200 font-normal">
+            <p className="text-sm leading-relaxed text-md-on-surface font-normal">
               {data.summary}
             </p>
           </div>
 
           {/* Section-by-Section Translation */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <div className="space-y-3.5">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-md-on-surface-variant px-1">
               {t.simplify.sectionsTitle} ({data.sections.length})
             </h4>
 
@@ -118,40 +120,42 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
               return (
                 <div
                   key={idx}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden transition-all"
+                  className="rounded-[24px] border border-md-outline/15 bg-md-surface-container shadow-xs hover:shadow-md-elevation-2 hover:scale-[1.005] transition-all duration-300 overflow-hidden"
                 >
                   <button
                     type="button"
                     onClick={() => toggleSection(idx)}
                     aria-expanded={isExpanded}
-                    className="w-full flex items-center justify-between p-4 text-left font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="w-full flex items-center justify-between p-5 text-left font-medium text-md-on-surface hover:bg-md-primary/5 transition-colors duration-200"
                   >
                     <span className="text-base">{section.heading}</span>
-                    {isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-slate-400" aria-hidden="true" />
-                    )}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-md-surface-container-low text-md-on-surface-variant">
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </div>
                   </button>
 
                   {isExpanded && (
-                    <div className="p-4 pt-0 border-t border-slate-100 dark:border-slate-800/60 space-y-3">
+                    <div className="p-5 pt-0 border-t border-md-outline/10 space-y-3.5">
                       {/* Plain English Meaning */}
                       <div className="mt-3">
-                        <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                        <p className="text-sm leading-relaxed text-md-on-surface">
                           {section.plainLanguageSummary}
                         </p>
                       </div>
 
                       {/* Key Takeaway */}
-                      <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-2.5 text-xs text-emerald-900 dark:text-emerald-200 font-medium">
+                      <div className="rounded-2xl bg-md-secondary-container/50 border border-md-outline/15 p-3.5 text-xs text-md-on-secondary-container font-medium">
                         <span className="font-bold">{t.simplify.keyTakeaway}:</span> {section.keyTakeaway}
                       </div>
 
                       {/* Original Excerpt Reference */}
                       {section.originalSnippet && (
-                        <div className="rounded-lg bg-slate-50 dark:bg-slate-800/40 p-2 text-xs text-slate-500 dark:text-slate-400 italic border-l-2 border-slate-300 dark:border-slate-600">
-                          <span className="not-italic font-semibold block text-2xs uppercase text-slate-400 mb-0.5">
+                        <div className="rounded-2xl bg-md-surface-container-low p-3.5 text-xs text-md-on-surface-variant italic border-l-4 border-md-primary/70">
+                          <span className="not-italic font-semibold block text-2xs uppercase text-md-on-surface-variant/80 mb-0.5">
                             {t.simplify.originalExcerpt}
                           </span>
                           &ldquo;{section.originalSnippet}&rdquo;
@@ -166,18 +170,20 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
 
           {/* Legal Terms Glossary */}
           {data.glossary && data.glossary.length > 0 && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                  <h4 className="text-base font-semibold text-slate-900 dark:text-white">
+            <div className="rounded-[24px] border border-md-outline/15 bg-md-surface-container p-6 shadow-xs space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-md-primary/10 text-md-primary">
+                    <BookOpen className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <h4 className="text-base font-semibold text-md-on-surface">
                     {t.simplify.glossaryTitle}
                   </h4>
                 </div>
 
                 {/* Glossary Search Box */}
                 <div className="relative">
-                  <Search className="h-4 w-4 absolute left-2.5 top-2 text-slate-400" aria-hidden="true" />
+                  <Search className="h-4 w-4 absolute left-3 top-2 text-md-on-surface-variant" aria-hidden="true" />
                   <label htmlFor="glossary-search" className="sr-only">
                     Search glossary terms
                   </label>
@@ -187,27 +193,27 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Filter terms..."
-                    className="pl-8 pr-3 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200"
+                    className="pl-9 pr-4 py-1.5 text-xs rounded-full border border-md-outline/25 bg-md-surface-container-low focus:bg-md-surface focus:outline-none focus:border-md-primary text-md-on-surface placeholder:text-md-on-surface-variant/60 transition-all duration-200"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {filteredGlossary?.map((item, idx) => (
                   <div
                     key={idx}
-                    className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 bg-slate-50/50 dark:bg-slate-800/30 space-y-1.5"
+                    className="rounded-2xl border border-md-outline/15 p-4 bg-md-surface-container-low/70 space-y-2 hover:shadow-xs transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm text-blue-700 dark:text-blue-300">
+                      <span className="font-semibold text-sm text-md-primary">
                         {item.term}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <p className="text-xs text-md-on-surface leading-relaxed">
                       {item.definition}
                     </p>
                     {item.contextInDoc && (
-                      <p className="text-2xs text-slate-500 dark:text-slate-400 italic">
+                      <p className="text-2xs text-md-on-surface-variant italic">
                         In this doc: {item.contextInDoc}
                       </p>
                     )}
@@ -218,10 +224,12 @@ export const SimplifierView: React.FC<SimplifierViewProps> = ({
           )}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-12 text-center text-slate-500 dark:text-slate-400">
-          <Sparkles className="h-8 w-8 mx-auto text-slate-400 mb-2" aria-hidden="true" />
-          <p className="text-sm font-medium">Ready to simplify.</p>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="rounded-[24px] border-2 border-dashed border-md-outline/20 p-12 text-center text-md-on-surface-variant bg-md-surface-container/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-md-primary/10 text-md-primary mx-auto mb-3">
+            <Sparkles className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <p className="text-sm font-medium text-md-on-surface">Ready to simplify.</p>
+          <p className="text-xs text-md-on-surface-variant mt-1 max-w-md mx-auto">
             Click &ldquo;{t.actions.simplifyBtn}&rdquo; to generate plain-language explanations and a legal glossary.
           </p>
         </div>

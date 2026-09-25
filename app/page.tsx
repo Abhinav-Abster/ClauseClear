@@ -155,7 +155,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex flex-col relative bg-md-background text-md-on-surface selection:bg-md-secondary-container selection:text-md-on-secondary-container overflow-x-hidden transition-colors duration-300">
+      {/* Material You Atmospheric Background Shapes */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10" aria-hidden="true">
+        <div className="absolute -top-48 -right-48 w-[500px] h-[500px] rounded-full bg-md-primary/10 blur-3xl" />
+        <div className="absolute top-1/3 -left-48 w-[450px] h-[450px] rounded-full bg-md-secondary-container/30 blur-3xl" />
+        <div className="absolute -bottom-36 right-1/4 w-[480px] h-[480px] rounded-full bg-md-tertiary-container/20 blur-3xl" />
+      </div>
+
       {/* Header */}
       <Header
         language={language}
@@ -170,17 +177,17 @@ export default function Home() {
       <DisclaimerBanner language={language} />
 
       {/* Main Workspace */}
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 py-6 sm:px-6 lg:px-8">
+      <main className="flex-1 mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-8">
         {generalError && (
           <div
             role="alert"
-            className="mb-6 rounded-xl bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-200 border border-red-200 dark:border-red-900 flex items-center justify-between"
+            className="mb-6 rounded-2xl bg-md-error-container p-4 text-sm text-md-on-error-container border border-md-error/25 flex items-center justify-between shadow-sm animate-in fade-in"
           >
             <span>{generalError}</span>
             <button
               type="button"
               onClick={() => setGeneralError(null)}
-              className="text-xs font-bold underline ml-4 hover:opacity-80"
+              className="rounded-full px-3 py-1 text-xs font-bold bg-md-on-error-container/10 hover:bg-md-on-error-container/20 transition-all duration-200 active:scale-95 ml-4"
             >
               Dismiss
             </button>
@@ -191,7 +198,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Document Input Workspace */}
           <div className="lg:col-span-5">
-            <div className="sticky top-6">
+            <div className="sticky top-20">
               <DocumentInput
                 documentText={documentText}
                 onDocumentChange={(text) => {
@@ -205,12 +212,12 @@ export default function Home() {
           </div>
 
           {/* Right Column: Grounded Analysis Tools */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
-            {/* Tab Navigation */}
+          <div className="lg:col-span-7 flex flex-col gap-5">
+            {/* Tab Navigation (Material You Pill Bar) */}
             <div
               role="tablist"
               aria-label="Document Analysis Tools"
-              className="flex flex-wrap gap-1.5 p-1.5 bg-slate-200/80 dark:bg-slate-800/80 rounded-xl border border-slate-300/60 dark:border-slate-700/60"
+              className="flex flex-wrap gap-1.5 p-1.5 bg-md-surface-container rounded-full border border-md-outline/15 shadow-xs"
             >
               <button
                 role="tab"
@@ -219,10 +226,10 @@ export default function Home() {
                 aria-controls="panel-simplify"
                 tabIndex={activeTab === "simplify" ? 0 : -1}
                 onClick={() => setActiveTab("simplify")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   activeTab === "simplify"
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-md-primary text-md-on-primary shadow-md-elevation-1"
+                    : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
                 }`}
               >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
@@ -236,10 +243,10 @@ export default function Home() {
                 aria-controls="panel-analyze"
                 tabIndex={activeTab === "analyze" ? 0 : -1}
                 onClick={() => setActiveTab("analyze")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   activeTab === "analyze"
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-md-primary text-md-on-primary shadow-md-elevation-1"
+                    : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
                 }`}
               >
                 <ShieldAlert className="h-4 w-4" aria-hidden="true" />
@@ -253,10 +260,10 @@ export default function Home() {
                 aria-controls="panel-ask"
                 tabIndex={activeTab === "ask" ? 0 : -1}
                 onClick={() => setActiveTab("ask")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   activeTab === "ask"
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-md-primary text-md-on-primary shadow-md-elevation-1"
+                    : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
                 }`}
               >
                 <MessageSquare className="h-4 w-4" aria-hidden="true" />
@@ -270,10 +277,10 @@ export default function Home() {
                 aria-controls="panel-checklist"
                 tabIndex={activeTab === "checklist" ? 0 : -1}
                 onClick={() => setActiveTab("checklist")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   activeTab === "checklist"
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-md-primary text-md-on-primary shadow-md-elevation-1"
+                    : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
                 }`}
               >
                 <ListChecks className="h-4 w-4" aria-hidden="true" />
@@ -287,10 +294,10 @@ export default function Home() {
                 aria-controls="panel-compare"
                 tabIndex={activeTab === "compare" ? 0 : -1}
                 onClick={() => setActiveTab("compare")}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                   activeTab === "compare"
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-md-primary text-md-on-primary shadow-md-elevation-1"
+                    : "text-md-on-surface-variant hover:text-md-on-surface hover:bg-md-primary/10"
                 }`}
               >
                 <GitCompare className="h-4 w-4" aria-hidden="true" />
@@ -377,12 +384,12 @@ export default function Home() {
       </main>
 
       {/* Footer with Compliance & Alignment Statement */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 px-4 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 mt-12">
+      <footer className="border-t border-md-outline/15 py-8 px-4 text-center text-xs text-md-on-surface-variant bg-md-surface-container/60 mt-16 transition-colors duration-300">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <span>
-            © {new Date().getFullYear()} <strong>ClauseClear</strong> — Accessible Legal Information & Document Comprehension.
+            © {new Date().getFullYear()} <strong className="text-md-on-surface">ClauseClear</strong> — Accessible Legal Information & Document Comprehension.
           </span>
-          <span className="text-slate-400 dark:text-slate-500">
+          <span className="text-md-on-surface-variant/80">
             Strictly informational & educational. Not a substitute for licensed legal advice.
           </span>
         </div>
