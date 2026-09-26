@@ -87,4 +87,74 @@ RESIDENTIAL LEASE AGREEMENT
     const data = await res.json();
     expect(data.error).toContain("exceeds maximum length");
   });
+
+  it("processes large document using multi-stage candidate extraction and selective reasoning", async () => {
+    // Large document exceeding 4000 chars threshold
+    const largeDoc = Array.from({ length: 15 }, (_, i) =>
+      `SECTION ${i + 1}. PROVISION ${i + 1}\n` +
+      `This section sets forth obligations regarding indemnity, breach, default, and monetary damages of $50,000 within 30 days. ` +
+      `Tenant shall indemnify Landlord against all claims and damages. Additional terms and operating rules apply here. `.repeat(3),
+    ).join("\n\n");
+
+    expect(largeDoc.length).toBeGreaterThan(4000);
+
+    const fastModelOutput = {
+      overallRiskLevel: "high",
+      executiveSummary: "Initial fast extraction summary.",
+      clauses: [
+        {
+          title: "Indemnity Clause",
+          type: "risk",
+          severity: "high",
+          exactQuote: "Tenant shall indemnify Landlord against all claims and damages.",
+          explanation: "Initial explanation of indemnity obligation.",
+          recommendation: "Review liability limits.",
+        },
+      ],
+      deadlines: [
+        {
+          title: "30-day notice",
+          timeframe: "30 days",
+          triggerEvent: "Notice of breach",
+          consequenceOfMissing: "Default",
+          exactQuote: "monetary damages of $50,000 within 30 days.",
+        },
+      ],
+    };
+
+    const refinedModelOutput = {
+      refinedClauses: [
+        {
+          title: "Indemnity Clause",
+          type: "risk",
+          severity: "high",
+          exactQuote: "Tenant shall indemnify Landlord against all claims and damages.",
+          explanation: "Deep reasoning: Broad unreciprocal indemnity creates uncapped enterprise risk.",
+          recommendation: "Cap indemnification to insurance proceeds and mutualize obligations.",
+        },
+      ],
+      refinedExecutiveSummary: "High-risk agreement with severe unilateral indemnification exposure.",
+    };
+
+    // First call: fast model on candidate clauses
+    // Second call: selective reasoning model on high-risk clauses
+    (gemini.generateStructuredContent as jest.Mock)
+      .mockResolvedValueOnce(fastModelOutput)
+      .mockResolvedValueOnce(refinedModelOutput);
+
+    const req = new NextRequest("http://localhost:3000/api/analyze", {
+      method: "POST",
+      body: JSON.stringify({ document: largeDoc, language: "en" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.overallRiskLevel).toBe("high");
+    expect(data.executiveSummary).toContain("severe unilateral indemnification");
+    expect(data.clauses[0].explanation).toContain("Deep reasoning");
+    expect(gemini.generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
 });
+

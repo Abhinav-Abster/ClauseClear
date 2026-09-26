@@ -96,6 +96,33 @@ export const SimplifyResponseSchema = z.object({
 });
 export type SimplifyResponse = z.infer<typeof SimplifyResponseSchema>;
 
+export const SectionSimplifyResponseSchema = z.object({
+  heading: z.string(),
+  plainLanguageSummary: z.string(),
+  keyTakeaway: z.string(),
+  glossary: z.array(
+    z.object({
+      term: z.string(),
+      definition: z.string(),
+      contextInDoc: z.string(),
+    }),
+  ),
+});
+export type SectionSimplifyResponse = z.infer<typeof SectionSimplifyResponseSchema>;
+
+export const SynthesisSimplifyResponseSchema = z.object({
+  summary: z.string(),
+  documentType: z.string(),
+  glossary: z.array(
+    z.object({
+      term: z.string(),
+      definition: z.string(),
+      contextInDoc: z.string(),
+    }),
+  ),
+});
+export type SynthesisSimplifyResponse = z.infer<typeof SynthesisSimplifyResponseSchema>;
+
 export const ClauseTypeSchema = z.enum(["obligation", "deadline", "risk", "unusual_term"]);
 export const SeveritySchema = z.enum(["low", "medium", "high"]);
 
@@ -125,6 +152,13 @@ export const AnalyzeResponseSchema = z.object({
   deadlines: z.array(DeadlineItemSchema),
 });
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;
+
+export const RefineRiskResponseSchema = z.object({
+  refinedClauses: z.array(ClauseItemSchema),
+  refinedExecutiveSummary: z.string().optional(),
+});
+export type RefineRiskResponse = z.infer<typeof RefineRiskResponseSchema>;
+
 
 export const AskResponseSchema = z.object({
   isCoveredInDocument: z.boolean(),

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AnalyzeInputSchema, AnalyzeResponseSchema } from "@/lib/validation";
-import { ANALYZE_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
-import { buildAnalyzePrompt } from "@/lib/prompts";
-import { generateStructuredContent, REASONING_MODEL } from "@/lib/gemini";
+import { AnalyzeInputSchema, AnalyzeResponseSchema, RefineRiskResponseSchema } from "@/lib/validation";
+import { ANALYZE_RESPONSE_SCHEMA, REFINE_RISK_SCHEMA } from "@/lib/gemini-schemas";
+import { buildAnalyzePrompt, buildRefineRiskPrompt } from "@/lib/prompts";
+import { generateStructuredContent, DEFAULT_MODEL, REASONING_MODEL } from "@/lib/gemini";
+import { extractCandidateClauses } from "@/lib/document-processor";
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -13,6 +14,9 @@ import {
   logSafeRequest,
 } from "@/lib/api-guard";
 import crypto from "crypto";
+
+/** Threshold (characters) above which candidate clause extraction + multi-stage pipeline is used */
+const ANALYZE_THRESHOLD_CHARS = 4000;
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -74,20 +78,73 @@ export async function POST(req: NextRequest) {
 
   // 4. Model Invocation
   try {
-    const { systemInstruction, userContent } = buildAnalyzePrompt(document, language);
+    let result;
 
-    // Architectural Justification:
-    // We utilize REASONING_MODEL ('gemini-2.5-pro') specifically for Clause & Risk Analyzer
-    // because complex legal contracts contain subtle traps (e.g. cross-indemnification,
-    // buried liquidated damages, statutory waiver traps) where semantic accuracy and rigorous
-    // risk detection far outweigh raw millisecond latency.
-    const result = await generateStructuredContent({
-      systemInstruction,
-      userContent,
-      schema: AnalyzeResponseSchema,
-      responseSchema: ANALYZE_RESPONSE_SCHEMA,
-      model: REASONING_MODEL,
-    });
+    if (document.length < ANALYZE_THRESHOLD_CHARS) {
+      // Small document path: direct reasoning model invocation
+      const { systemInstruction, userContent } = buildAnalyzePrompt(document, language);
+      result = await generateStructuredContent({
+        systemInstruction,
+        userContent,
+        schema: AnalyzeResponseSchema,
+        responseSchema: ANALYZE_RESPONSE_SCHEMA,
+        model: REASONING_MODEL,
+      });
+    } else {
+      // Large document path (Phase 4):
+      // Stage 1: Candidate clause extraction via local preprocessing
+      const { candidateText } = extractCandidateClauses(document);
+
+      // Stage 2: Fast model for initial structured extraction
+      const { systemInstruction: fastSystem, userContent: fastUser } = buildAnalyzePrompt(
+        candidateText,
+        language,
+      );
+
+      result = await generateStructuredContent({
+        systemInstruction: fastSystem,
+        userContent: fastUser,
+        schema: AnalyzeResponseSchema,
+        responseSchema: ANALYZE_RESPONSE_SCHEMA,
+        model: DEFAULT_MODEL,
+      });
+
+      // Stage 3: Selective reasoning model for high-severity or unusual risks
+      const highRiskClauses = result.clauses.filter(
+        (c) => c.severity === "high" || c.type === "unusual_term",
+      );
+
+      if (highRiskClauses.length > 0 || result.overallRiskLevel === "high") {
+        try {
+          const { systemInstruction: refineSystem, userContent: refineUser } = buildRefineRiskPrompt(
+            JSON.stringify(highRiskClauses, null, 2),
+            candidateText.slice(0, 8000),
+            language,
+          );
+
+          const refined = await generateStructuredContent({
+            systemInstruction: refineSystem,
+            userContent: refineUser,
+            schema: RefineRiskResponseSchema,
+            responseSchema: REFINE_RISK_SCHEMA,
+            model: REASONING_MODEL,
+          });
+
+          if (refined.refinedClauses && refined.refinedClauses.length > 0) {
+            const refinedMap = new Map(
+              refined.refinedClauses.map((rc) => [rc.title.toLowerCase(), rc]),
+            );
+            result = {
+              ...result,
+              executiveSummary: refined.refinedExecutiveSummary || result.executiveSummary,
+              clauses: result.clauses.map((c) => refinedMap.get(c.title.toLowerCase()) || c),
+            };
+          }
+        } catch {
+          // Gracefully retain Stage 2 result if selective refinement encounters errors
+        }
+      }
+    }
 
     // 5. Cache Result
     setInCache(cacheKey, result);

@@ -4,11 +4,19 @@
 import { POST } from "@/app/api/ask/route";
 import { NextRequest } from "next/server";
 import * as gemini from "@/lib/gemini";
+import * as embeddings from "@/lib/embeddings";
 import { clearCache, clearRateLimits } from "@/lib/api-guard";
 
 jest.mock("@/lib/gemini", () => ({
   ...jest.requireActual("@/lib/gemini"),
   generateStructuredContent: jest.fn(),
+}));
+
+jest.mock("@/lib/embeddings", () => ({
+  ensureDocumentEmbedded: jest.fn(),
+  retrieveRelevantChunks: jest.fn(),
+  clearEmbeddedDocStore: jest.fn(),
+  getProcessedDocument: jest.fn(),
 }));
 
 describe("POST /api/ask", () => {
@@ -18,6 +26,7 @@ describe("POST /api/ask", () => {
     jest.clearAllMocks();
   });
 
+  // Small doc (below RAG_THRESHOLD_CHARS=4000) → uses original full-document path
   const validDoc = `
 RESIDENTIAL LEASE AGREEMENT
 Oakridge Properties LLC leases to Jane Doe.
@@ -167,5 +176,95 @@ Pets: One domestic dog under 35 lbs permitted with a $300 refundable deposit.
     expect(data3.answer).toBe("Response for context 1");
     expect(res3.headers.get("X-Cache")).toBe("HIT");
     expect(gemini.generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
+
+  describe("RAG path for large documents", () => {
+    // Large doc (above RAG_THRESHOLD_CHARS=4000) → triggers RAG pipeline
+    const largeSections = Array.from({ length: 12 }, (_, i) =>
+      `${i + 1}. SECTION ${i + 1}\n` +
+      `This is the content of section ${i + 1}. It contains important legal provisions ` +
+      `that are relevant to the agreement between the parties. The terms specified herein ` +
+      `shall be binding upon execution. Additional clauses specify obligations, penalties, ` +
+      `and deadlines that must be adhered to by all parties involved in this agreement. ` +
+      `Furthermore, all provisions shall survive the termination of this agreement to the ` +
+      `extent necessary to give effect to the intent of the parties. The obligations set ` +
+      `forth in this section shall be interpreted in accordance with applicable law.`,
+    );
+    const largeDoc = largeSections.join("\n\n");
+
+    it("uses RAG retrieval for documents above the threshold", async () => {
+      const mockChunks = [
+        {
+          chunkId: "hash:chunk-0",
+          documentId: "hash",
+          section: "3. RENT",
+          subsection: "",
+          text: "Rent is $2,200.00 per month.",
+          startOffset: 500,
+          endOffset: 527,
+        },
+      ];
+
+      (embeddings.ensureDocumentEmbedded as jest.Mock).mockResolvedValueOnce({
+        processedDoc: { chunks: mockChunks },
+        chunkEmbeddings: [[1, 0, 0]],
+      });
+      (embeddings.retrieveRelevantChunks as jest.Mock).mockResolvedValueOnce(mockChunks);
+
+      const mockOutput = {
+        isCoveredInDocument: true,
+        answer: "The rent is $2,200.00 per month.",
+        relevantQuotes: ["Rent is $2,200.00 per month."],
+        suggestedFollowUps: [],
+        informationalDisclaimer: "Not legal advice.",
+      };
+      (gemini.generateStructuredContent as jest.Mock).mockResolvedValueOnce(mockOutput);
+
+      const req = new NextRequest("http://localhost:3000/api/ask", {
+        method: "POST",
+        body: JSON.stringify({
+          document: largeDoc,
+          question: "What is the monthly rent?",
+          history: [],
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      // Verify RAG pipeline was invoked
+      expect(embeddings.ensureDocumentEmbedded).toHaveBeenCalledTimes(1);
+      expect(embeddings.retrieveRelevantChunks).toHaveBeenCalledTimes(1);
+
+      const data = await res.json();
+      expect(data.answer).toContain("$2,200");
+    });
+
+    it("does NOT invoke RAG for small documents", async () => {
+      const mockOutput = {
+        isCoveredInDocument: true,
+        answer: "Small doc answer.",
+        relevantQuotes: [],
+        suggestedFollowUps: [],
+        informationalDisclaimer: "Disclaimer.",
+      };
+      (gemini.generateStructuredContent as jest.Mock).mockResolvedValueOnce(mockOutput);
+
+      const req = new NextRequest("http://localhost:3000/api/ask", {
+        method: "POST",
+        body: JSON.stringify({
+          document: validDoc, // small doc
+          question: "What about the rent?",
+          history: [],
+        }),
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      // RAG functions should NOT be called for small documents
+      expect(embeddings.ensureDocumentEmbedded).not.toHaveBeenCalled();
+      expect(embeddings.retrieveRelevantChunks).not.toHaveBeenCalled();
+    });
   });
 });

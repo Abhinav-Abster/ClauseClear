@@ -1,4 +1,4 @@
-import { buildAnalyzePrompt, buildSimplifyPrompt, SYSTEM_BASE_INSTRUCTION } from "@/lib/prompts";
+import { buildAnalyzePrompt, buildSimplifyPrompt } from "@/lib/prompts";
 import { AnalyzeResponseSchema } from "@/lib/validation";
 
 describe("Security Requirement: Prompt Injection Defense", () => {

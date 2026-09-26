@@ -1,4 +1,5 @@
 import { SupportedLanguage } from "./validation";
+import type { DocumentChunk } from "./document-processor";
 
 export const SYSTEM_BASE_INSTRUCTION = `You are ClauseClear, an impartial legal document comprehension assistant. Your mission is to make complex legal contracts and information accessible, transparent, and easy to navigate for non-lawyers.
 
@@ -159,3 +160,183 @@ ${documentB}
 --- END ${labelB} ---`,
   };
 }
+
+// ==========================================
+// RAG-Powered Q&A Prompt
+// ==========================================
+
+/** Maximum recent messages to include from conversation history. */
+const MAX_RECENT_MESSAGES = 6;
+
+/**
+ * Prompt for RAG-Powered Document Q&A.
+ *
+ * Instead of embedding the entire document, this prompt receives only the
+ * top-K retrieved chunks with their section metadata and character offsets,
+ * reducing input tokens by 75-80% on typical legal documents.
+ *
+ * Conversation history is compacted to the last MAX_RECENT_MESSAGES turns.
+ */
+export function buildRagAskPrompt(
+  chunks: DocumentChunk[],
+  question: string,
+  history: Array<{ role: "user" | "assistant"; content: string }> = [],
+  language: SupportedLanguage = "en",
+) {
+  const languageDirective = getLanguageDirective(language);
+
+  // Compact history: keep only the most recent messages
+  const recentHistory =
+    history.length > MAX_RECENT_MESSAGES ? history.slice(-MAX_RECENT_MESSAGES) : history;
+
+  const formattedHistory = recentHistory
+    .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+    .join("\n");
+
+  const formattedChunks = chunks
+    .map((chunk, i) => {
+      const location = chunk.subsection
+        ? `${chunk.section} > ${chunk.subsection}`
+        : chunk.section;
+      return `[Excerpt ${i + 1} | ${location} | Characters ${chunk.startOffset}–${chunk.endOffset}]\n${chunk.text}`;
+    })
+    .join("\n\n");
+
+  return {
+    systemInstruction: `${SYSTEM_BASE_INSTRUCTION}
+
+TASK: Answer the user's question STRICTLY and SOLELY based on the provided document excerpts.
+${languageDirective}
+
+CRITICAL GROUNDING RULES:
+1. You are given RELEVANT EXCERPTS from the document, not the full document. Base your answer strictly on the excerpts provided.
+2. If the excerpts DO NOT contain the answer or do not mention the topic requested, set "isCoveredInDocument": false and explicitly say: "The provided document excerpts do not contain information regarding [topic]. The answer may exist in other sections of the document not shown here."
+3. NEVER guess, assume, or pull in outside legal standards to answer an unaddressed question.
+4. If the user asks for legal advice (such as "Should I sign this?", "Can I break this lease without penalty?"), provide informational analysis of the relevant terms and state clearly that you cannot advise whether to sign, recommending consultation with a legal professional.
+5. Always quote the specific sentence(s) from the excerpts that back up your answer.
+6. When citing, reference the section label provided with each excerpt.
+
+OUTPUT REQUIREMENTS:
+Respond with structured JSON matching the required schema.`,
+    userContent: `${formattedHistory ? `Prior Conversation (recent):\n${formattedHistory}\n\n` : ""}User Question: "${question}"
+
+--- BEGIN RELEVANT DOCUMENT EXCERPTS ---
+${formattedChunks}
+--- END RELEVANT DOCUMENT EXCERPTS ---`,
+  };
+}
+
+/**
+ * Prompt for Deep Reasoning Refinement of High-Risk Clauses (Phase 4).
+ * Used selectively with REASONING_MODEL only on clauses flagged as high severity
+ * or containing complex potential traps.
+ */
+export function buildRefineRiskPrompt(
+  candidateClausesJson: string,
+  contextText: string,
+  language: SupportedLanguage = "en",
+) {
+  const languageDirective = getLanguageDirective(language);
+
+  return {
+    systemInstruction: `${SYSTEM_BASE_INSTRUCTION}
+
+TASK: Perform a deep, rigorous legal analysis of the provided high-severity candidate clauses.
+${languageDirective}
+
+EVALUATION GUIDELINES:
+1. Examine each clause for hidden traps, cross-indemnifications, unilateral rights, statutory waiver risks, or buried liabilities.
+2. For each clause, refine the explanation with specific legal exposure, verify that the quote is verbatim, and provide a sharp, actionable negotiation recommendation.
+3. If an updated executive summary is warranted based on these high-risk findings, provide it.
+
+OUTPUT REQUIREMENTS:
+Respond with structured JSON matching the required schema.`,
+    userContent: `Candidate High-Risk Clauses to Refine:
+${candidateClausesJson}
+
+--- BEGIN SURROUNDING CONTEXT ---
+${contextText}
+--- END SURROUNDING CONTEXT ---`,
+  };
+}
+
+/**
+ * Prompt for Section-Level Simplification in Map/Reduce (Phase 5).
+ */
+export function buildSectionSimplifyPrompt(
+  heading: string,
+  sectionText: string,
+  language: SupportedLanguage = "en",
+) {
+  const languageDirective = getLanguageDirective(language);
+
+  return {
+    systemInstruction: `${SYSTEM_BASE_INSTRUCTION}
+
+TASK: Provide a clear plain-language summary, key takeaway, and extract any legal/technical terms defined or used in this specific section.
+${languageDirective}
+
+OUTPUT REQUIREMENTS:
+Respond with structured JSON matching the required schema.`,
+    userContent: `Section Heading: "${heading}"
+
+--- BEGIN SECTION TEXT ---
+${sectionText}
+--- END SECTION TEXT ---`,
+  };
+}
+
+/**
+ * Prompt for Document Synthesis in Map/Reduce (Phase 5).
+ */
+export function buildSynthesizeSimplifyPrompt(
+  sectionSummariesJson: string,
+  accumulatedGlossaryJson: string,
+  language: SupportedLanguage = "en",
+) {
+  const languageDirective = getLanguageDirective(language);
+
+  return {
+    systemInstruction: `${SYSTEM_BASE_INSTRUCTION}
+
+TASK: Synthesize section summaries into a cohesive, high-level document executive summary, determine the exact documentType, and consolidate/deduplicate the glossary.
+${languageDirective}
+
+OUTPUT REQUIREMENTS:
+Respond with structured JSON matching the required schema.`,
+    userContent: `Synthesize the following section summaries into a unified document summary:
+
+Section Summaries:
+${sectionSummariesJson}
+
+Accumulated Glossary Entries:
+${accumulatedGlossaryJson}`,
+  };
+}
+
+/**
+ * Prompt for Structural/Semantic Document Comparison (Phase 6).
+ */
+export function buildStructuralComparePrompt(
+  labelA: string,
+  labelB: string,
+  structuralDiffText: string,
+  language: SupportedLanguage = "en",
+) {
+  const languageDirective = getLanguageDirective(language);
+
+  return {
+    systemInstruction: `${SYSTEM_BASE_INSTRUCTION}
+
+TASK: Compare the two legal documents based on the provided structural diff.
+Focus strictly on explaining what the differences mean, whether they materially change obligations, which version is more favorable to the user, and key recommendations.
+${languageDirective}
+
+OUTPUT REQUIREMENTS:
+Respond with structured JSON matching the required schema.`,
+    userContent: `Compare ${labelA} and ${labelB} using the following structural diff and clause comparisons:
+
+${structuralDiffText}`,
+  };
+}
+

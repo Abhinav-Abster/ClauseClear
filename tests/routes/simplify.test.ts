@@ -110,4 +110,57 @@ RESIDENTIAL LEASE AGREEMENT
     const data = await res.json();
     expect(data.error).toContain("Document is too short");
   });
+
+  it("simplifies large document using section-level map/reduce with bounded concurrency", async () => {
+    // Generate large document exceeding 4000 chars threshold
+    const largeDoc = Array.from({ length: 5 }, (_, i) =>
+      `SECTION ${i + 1}. DETAILED PROVISION ${i + 1}\n` +
+      `This section establishes terms and conditions for clause ${i + 1}. All parties agree to perform the tasks described herein diligently. `.repeat(10),
+    ).join("\n\n");
+
+    expect(largeDoc.length).toBeGreaterThan(4000);
+
+    const mockSectionOutput = {
+      heading: "Section Summary",
+      plainLanguageSummary: "Plain explanation of this section.",
+      keyTakeaway: "Comply with section terms.",
+      glossary: [
+        {
+          term: "Diligently",
+          definition: "With thorough care and prompt attention.",
+          contextInDoc: "Used in clause performance requirement.",
+        },
+      ],
+    };
+
+    const mockSynthesisOutput = {
+      summary: "Comprehensive plain-language synthesis of the entire multi-section agreement.",
+      documentType: "Commercial Services Agreement",
+      glossary: [],
+    };
+
+    // Mock section calls followed by final synthesis call
+    (gemini.generateStructuredContent as jest.Mock).mockImplementation(async (params) => {
+      if (params.systemInstruction.includes("TASK: Synthesize section summaries")) {
+        return mockSynthesisOutput;
+      }
+      return mockSectionOutput;
+    });
+
+    const req = new NextRequest("http://localhost:3000/api/simplify", {
+      method: "POST",
+      body: JSON.stringify({ document: largeDoc, language: "en" }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.documentType).toBe("Commercial Services Agreement");
+    expect(data.summary).toContain("Comprehensive plain-language synthesis");
+    expect(data.sections.length).toBeGreaterThanOrEqual(1);
+    expect(data.glossary.length).toBeGreaterThanOrEqual(1);
+    expect(gemini.generateStructuredContent).toHaveBeenCalled();
+  });
 });
+

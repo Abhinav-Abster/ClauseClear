@@ -40,6 +40,78 @@ export const SIMPLIFY_RESPONSE_SCHEMA = {
   required: ["summary", "documentType", "sections", "glossary"],
 };
 
+export const SECTION_SIMPLIFY_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    heading: { type: Type.STRING },
+    plainLanguageSummary: { type: Type.STRING },
+    keyTakeaway: { type: Type.STRING },
+    glossary: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          term: { type: Type.STRING },
+          definition: { type: Type.STRING },
+          contextInDoc: { type: Type.STRING },
+        },
+        required: ["term", "definition", "contextInDoc"],
+      },
+    },
+  },
+  required: ["heading", "plainLanguageSummary", "keyTakeaway", "glossary"],
+};
+
+export const SYNTHESIS_SIMPLIFY_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    summary: { type: Type.STRING },
+    documentType: { type: Type.STRING },
+    glossary: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          term: { type: Type.STRING },
+          definition: { type: Type.STRING },
+          contextInDoc: { type: Type.STRING },
+        },
+        required: ["term", "definition", "contextInDoc"],
+      },
+    },
+  },
+  required: ["summary", "documentType", "glossary"],
+};
+
+export const REFINE_RISK_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    refinedClauses: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          type: {
+            type: Type.STRING,
+            enum: ["obligation", "deadline", "risk", "unusual_term"],
+          },
+          severity: {
+            type: Type.STRING,
+            enum: ["low", "medium", "high"],
+          },
+          exactQuote: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          recommendation: { type: Type.STRING },
+        },
+        required: ["title", "type", "severity", "exactQuote", "explanation", "recommendation"],
+      },
+    },
+    refinedExecutiveSummary: { type: Type.STRING },
+  },
+  required: ["refinedClauses"],
+};
+
 export const ANALYZE_RESPONSE_SCHEMA = {
   type: Type.OBJECT,
   properties: {

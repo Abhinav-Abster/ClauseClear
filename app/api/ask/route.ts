@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AskInputSchema, AskResponseSchema } from "@/lib/validation";
 import { ASK_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
-import { buildAskPrompt } from "@/lib/prompts";
+import { buildAskPrompt, buildRagAskPrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
+import { ensureDocumentEmbedded, retrieveRelevantChunks } from "@/lib/embeddings";
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -13,6 +14,13 @@ import {
   logSafeRequest,
 } from "@/lib/api-guard";
 import crypto from "crypto";
+
+/**
+ * Documents below this character threshold use the original full-document
+ * approach. RAG overhead (chunking + embedding + retrieval) isn't worthwhile
+ * for documents that already fit comfortably in the context window.
+ */
+const RAG_THRESHOLD_CHARS = 4000;
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -74,16 +82,31 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // 4. Model Invocation
+  // 4. Model Invocation — RAG for large documents, full-doc for small ones
   try {
-    const { systemInstruction, userContent } = buildAskPrompt(document, question, history, language);
+    let systemInstruction: string;
+    let userContent: string;
+
+    if (document.length >= RAG_THRESHOLD_CHARS) {
+      // RAG path: chunk → embed → retrieve relevant chunks → Gemini
+      await ensureDocumentEmbedded(document, docHash);
+      const relevantChunks = await retrieveRelevantChunks(question, docHash);
+      const prompt = buildRagAskPrompt(relevantChunks, question, history, language);
+      systemInstruction = prompt.systemInstruction;
+      userContent = prompt.userContent;
+    } else {
+      // Small document: full-document approach (original behavior)
+      const prompt = buildAskPrompt(document, question, history, language);
+      systemInstruction = prompt.systemInstruction;
+      userContent = prompt.userContent;
+    }
 
     const result = await generateStructuredContent({
       systemInstruction,
       userContent,
       schema: AskResponseSchema,
       responseSchema: ASK_RESPONSE_SCHEMA,
-      model: DEFAULT_MODEL, // fast, low-latency grounded Q&A
+      model: DEFAULT_MODEL,
     });
 
     // 5. Cache Result

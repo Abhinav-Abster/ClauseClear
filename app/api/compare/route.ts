@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CompareInputSchema, CompareResponseSchema } from "@/lib/validation";
 import { COMPARE_RESPONSE_SCHEMA } from "@/lib/gemini-schemas";
-import { buildComparePrompt } from "@/lib/prompts";
+import { buildComparePrompt, buildStructuralComparePrompt } from "@/lib/prompts";
 import { generateStructuredContent, DEFAULT_MODEL } from "@/lib/gemini";
+import { computeStructuralDiff, StructuralDiffResult } from "@/lib/document-processor";
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -13,6 +14,51 @@ import {
   logSafeRequest,
 } from "@/lib/api-guard";
 import crypto from "crypto";
+
+const COMPARE_THRESHOLD_CHARS = 6000;
+
+function formatStructuralDiffForPrompt(
+  diff: StructuralDiffResult,
+  labelA: string,
+  labelB: string,
+): string {
+  const parts: string[] = [];
+
+  if (diff.identicalSections.length > 0) {
+    parts.push(
+      `### IDENTICAL PROVISIONS (Confirmed verbatim matches — no substantive difference):\n` +
+        diff.identicalSections.map((s) => `- ${s.heading}`).join("\n"),
+    );
+  }
+
+  if (diff.modifiedSections.length > 0) {
+    parts.push(`### MODIFIED PROVISIONS (Present in both, but terms differ):`);
+    for (const mod of diff.modifiedSections) {
+      let modText = `#### Topic / Section: ${mod.heading}\n`;
+      if (mod.detectedDiffs.length > 0) {
+        modText += `Detected Key Differences: ${mod.detectedDiffs.join("; ")}\n`;
+      }
+      modText += `[${labelA} Text]:\n${mod.textA}\n\n[${labelB} Text]:\n${mod.textB}\n`;
+      parts.push(modText);
+    }
+  }
+
+  if (diff.uniqueToA.length > 0) {
+    parts.push(`### CLAUSES UNIQUE TO ${labelA.toUpperCase()} (Not present in ${labelB}):`);
+    for (const u of diff.uniqueToA) {
+      parts.push(`- Section: ${u.heading}\nText: ${u.text}\n`);
+    }
+  }
+
+  if (diff.uniqueToB.length > 0) {
+    parts.push(`### CLAUSES UNIQUE TO ${labelB.toUpperCase()} (Not present in ${labelA}):`);
+    for (const u of diff.uniqueToB) {
+      parts.push(`- Section: ${u.heading}\nText: ${u.text}\n`);
+    }
+  }
+
+  return parts.join("\n\n");
+}
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -75,21 +121,47 @@ export async function POST(req: NextRequest) {
 
   // 4. Model Invocation
   try {
-    const { systemInstruction, userContent } = buildComparePrompt(
-      documentA,
-      documentB,
-      labelA,
-      labelB,
-      language,
-    );
+    let result;
 
-    const result = await generateStructuredContent({
-      systemInstruction,
-      userContent,
-      schema: CompareResponseSchema,
-      responseSchema: COMPARE_RESPONSE_SCHEMA,
-      model: DEFAULT_MODEL,
-    });
+    if (documentA.length + documentB.length < COMPARE_THRESHOLD_CHARS) {
+      // Small document comparison: standard direct prompt
+      const { systemInstruction, userContent } = buildComparePrompt(
+        documentA,
+        documentB,
+        labelA,
+        labelB,
+        language,
+      );
+
+      result = await generateStructuredContent({
+        systemInstruction,
+        userContent,
+        schema: CompareResponseSchema,
+        responseSchema: COMPARE_RESPONSE_SCHEMA,
+        model: DEFAULT_MODEL,
+      });
+    } else {
+      // Large document comparison (Phase 6):
+      // Step 1: Deterministic structural diff
+      const structuralDiff = computeStructuralDiff(documentA, documentB);
+      const diffSummaryText = formatStructuralDiffForPrompt(structuralDiff, labelA, labelB);
+
+      // Step 2: Semantic interpretation on only the differing / unique clauses
+      const { systemInstruction, userContent } = buildStructuralComparePrompt(
+        labelA,
+        labelB,
+        diffSummaryText,
+        language,
+      );
+
+      result = await generateStructuredContent({
+        systemInstruction,
+        userContent,
+        schema: CompareResponseSchema,
+        responseSchema: COMPARE_RESPONSE_SCHEMA,
+        model: DEFAULT_MODEL,
+      });
+    }
 
     // 5. Cache Result
     setInCache(cacheKey, result);
